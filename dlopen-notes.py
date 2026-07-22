@@ -101,6 +101,10 @@ class Priority(enum.Enum):
             return 'Requires'
         raise ValueError
 
+    @classmethod
+    def rpm_names(cls):
+        return [o.rpm_name() for o in cls]
+
 
 def group_by_feature(elffiles):
     features = {}
@@ -331,6 +335,10 @@ def parse_args():
 
     if not args.rpm_fileattr and not args.filenames:
         raise ValueError('At least one positional FILENAME parameter is required')
+
+    for attr in args.rpm_fileattr:
+        if attr not in Priority.rpm_names():
+            raise ValueError(f'Bad --rpm-fileattr argument {attr}')
 
     return args
 
