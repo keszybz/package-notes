@@ -199,7 +199,7 @@ def rpm_fileattr_generator(args):
 
             fileattr = Priority[level].rpm_name()
 
-            if fileattr != args.rpm_fileattr:
+            if fileattr not in args.rpm_fileattr:
                 continue
 
             if first:
@@ -276,7 +276,10 @@ def make_parser():
     )
     p.add_argument(
         '--rpm-fileattr',
+        type=lambda s: s.split(','),
+        action='extend',
         metavar='TYPE',
+        default=[],
         help='Run as rpm fileattr generator for TYPE dependencies',
     )
     p.add_argument(
@@ -314,11 +317,11 @@ def parse_args():
         and args.features is None
         and args.rpm_requires is None
         and args.rpm_recommends is None
-        and args.rpm_fileattr is None):
+        and not args.rpm_fileattr):
         # Make --raw the default if no action is specified.
         args.raw = True
 
-    if args.rpm_fileattr is not None:
+    if args.rpm_fileattr:
         if (args.filenames
             or args.raw
             or args.features is not None
@@ -326,7 +329,7 @@ def parse_args():
             or args.rpm_recommends):
             raise ValueError('--rpm-generate cannot be combined with most options')
 
-    if args.rpm_fileattr is None and not args.filenames:
+    if not args.rpm_fileattr and not args.filenames:
         raise ValueError('At least one positional FILENAME parameter is required')
 
     return args
@@ -334,7 +337,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    if args.rpm_fileattr is not None:
+    if args.rpm_fileattr:
         sys.exit(rpm_fileattr_generator(args))
 
     elffiles = [ELFFileReader(filename) for filename in args.filenames]
